@@ -14,7 +14,7 @@ import java.util.LinkedHashSet
 object PickerManager {
     private var maxCount = FilePickerConst.DEFAULT_MAX_COUNT
     private var showImages = true
-    var cameraDrawable = R.drawable.ic_camera
+    var cameraDrawable = R.drawable.ic_camera_placeholder
     var sortingType = SortingTypes.none
 
     val selectedPhotos: ArrayList<String> = ArrayList()

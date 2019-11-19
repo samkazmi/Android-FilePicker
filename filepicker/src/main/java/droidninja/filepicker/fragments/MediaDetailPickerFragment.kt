@@ -57,12 +57,12 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
         return inflater.inflate(R.layout.fragment_photo_picker, container, false)
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is PhotoPickerFragmentListener) {
             mListener = context
         } else {
-            throw RuntimeException(context?.toString() + " must implement PhotoPickerFragmentListener")
+            throw RuntimeException("$context must implement PhotoPickerFragmentListener")
         }
     }
 
@@ -191,9 +191,9 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
         when (requestCode) {
             ImageCaptureManager.REQUEST_TAKE_PHOTO -> if (resultCode == Activity.RESULT_OK) {
                 val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
-                if (imagePath != null && PickerManager.getMaxCount() == 1) {
+                if (imagePath != null) {
                     PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
-                    mListener?.onItemSelected()
+                    mListener?.onItemSelectedFromCamera()
                 } else {
                     Handler().postDelayed({ getDataFromMedia() }, 1000)
                 }
@@ -209,14 +209,14 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
         mGlideRequestManager.resumeRequests()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        inflater?.inflate(R.menu.select_menu, menu)
-        selectAllItem = menu?.findItem(R.id.action_select)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.select_menu, menu)
+        selectAllItem = menu.findItem(R.id.action_select)
         onItemSelected()
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val itemId = item?.itemId
         if (itemId == R.id.action_select) {
             photoGridAdapter?.let { adapter ->
@@ -245,7 +245,7 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
     companion object {
 
         private val TAG = MediaDetailPickerFragment::class.java.simpleName
-        private val SCROLL_THRESHOLD = 30
+        private const val SCROLL_THRESHOLD = 30
 
         fun newInstance(fileType: Int): MediaDetailPickerFragment {
             val mediaDetailPickerFragment = MediaDetailPickerFragment()

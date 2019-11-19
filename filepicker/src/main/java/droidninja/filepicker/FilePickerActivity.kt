@@ -153,6 +153,19 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
         }
     }
 
+    override fun onItemSelectedFromCamera() {
+        val currentCount = PickerManager.currentCount
+        setToolbarTitle(currentCount)
+
+        //if (PickerManager.getMaxCount() == 1 && currentCount == 1) {
+            returnData(
+                    if (type == FilePickerConst.MEDIA_PICKER)
+                        PickerManager.selectedPhotos
+                    else
+                        PickerManager.selectedFiles)
+      // }
+    }
+
     companion object {
 
         private val TAG = FilePickerActivity::class.java.simpleName

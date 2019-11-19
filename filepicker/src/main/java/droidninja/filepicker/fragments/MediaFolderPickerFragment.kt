@@ -48,13 +48,13 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
         return inflater.inflate(R.layout.fragment_media_folder_picker, container, false)
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is PhotoPickerFragmentListener) {
             mListener = context
         } else {
             throw RuntimeException(
-                    context?.toString() + " must implement PhotoPickerFragmentListener")
+                    "$context must implement PhotoPickerFragmentListener")
         }
     }
 
@@ -205,9 +205,9 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
         when (requestCode) {
             ImageCaptureManager.REQUEST_TAKE_PHOTO -> if (resultCode == Activity.RESULT_OK) {
                 val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
-                if (imagePath != null && PickerManager.getMaxCount() == 1) {
+                if (imagePath != null) {
                     PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
-                    mListener?.onItemSelected()
+                    mListener?.onItemSelectedFromCamera()
                 } else {
                     Handler().postDelayed({ getDataFromMedia() }, 1000)
                 }
@@ -226,7 +226,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     companion object {
 
         private val TAG = MediaFolderPickerFragment::class.java.simpleName
-        private val SCROLL_THRESHOLD = 30
+        private const val SCROLL_THRESHOLD = 30
         private val PERMISSION_WRITE_EXTERNAL_STORAGE_RC = 908
 
         fun newInstance(fileType: Int): MediaFolderPickerFragment {
