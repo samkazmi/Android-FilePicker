@@ -22,6 +22,7 @@ object FilePickerConst {
     const val KEY_SELECTED_DOCS = "SELECTED_DOCS"
 
     const val EXTRA_PICKER_TYPE = "EXTRA_PICKER_TYPE"
+    const val EXTRA_PICKER_CAMERA = "CAMERA"
     const val EXTRA_SHOW_GIF = "SHOW_GIF"
     const val EXTRA_FILE_TYPE = "EXTRA_FILE_TYPE"
     const val EXTRA_BUCKET_ID = "EXTRA_BUCKET_ID"

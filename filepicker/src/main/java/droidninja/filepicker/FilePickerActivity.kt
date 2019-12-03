@@ -17,6 +17,7 @@ import java.util.ArrayList
 
 class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener, DocFragment.DocFragmentListener, DocPickerFragment.DocPickerFragmentListener, MediaPickerFragment.MediaPickerFragmentListener {
     private var type: Int = 0
+    private var shouldOpenCamera: Boolean = false
 
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +29,7 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
         if (intent != null) {
             var selectedPaths: ArrayList<String>? = intent.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA)
             type = intent.getIntExtra(FilePickerConst.EXTRA_PICKER_TYPE, FilePickerConst.MEDIA_PICKER)
+            shouldOpenCamera = intent.getBooleanExtra(FilePickerConst.EXTRA_PICKER_CAMERA, false)
 
             if (selectedPaths != null) {
 
@@ -70,7 +72,7 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
 
     private fun openSpecificFragment(type: Int) {
         if (type == FilePickerConst.MEDIA_PICKER) {
-            val photoFragment = MediaPickerFragment.newInstance()
+            val photoFragment = MediaPickerFragment.newInstance(shouldOpenCamera)
             FragmentUtil.replaceFragment(this, R.id.container, photoFragment)
         } else {
             if (PickerManager.isDocSupport) PickerManager.addDocTypes()

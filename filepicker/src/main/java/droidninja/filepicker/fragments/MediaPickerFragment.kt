@@ -56,10 +56,10 @@ class MediaPickerFragment : BaseFragment() {
         tabLayout.tabMode = TabLayout.MODE_FIXED
 
         val adapter = SectionsPagerAdapter(childFragmentManager)
-
+        val openCamera = arguments?.getBoolean(OPEN_CAMERA_FIRST, false) ?: false
         if (PickerManager.showImages()) {
             if (PickerManager.isShowFolderView)
-                adapter.addFragment(MediaFolderPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_IMAGE), getString(R.string.images))
+                adapter.addFragment(MediaFolderPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_IMAGE, openCamera), getString(R.string.images))
             else
                 adapter.addFragment(MediaDetailPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_IMAGE), getString(R.string.images))
         } else
@@ -67,7 +67,7 @@ class MediaPickerFragment : BaseFragment() {
 
         if (PickerManager.showVideo()) {
             if (PickerManager.isShowFolderView)
-                adapter.addFragment(MediaFolderPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_VIDEO), getString(R.string.videos))
+                adapter.addFragment(MediaFolderPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_VIDEO, false), getString(R.string.videos))
             else
                 adapter.addFragment(MediaDetailPickerFragment.newInstance(FilePickerConst.MEDIA_TYPE_VIDEO), getString(R.string.videos))
         } else
@@ -75,12 +75,19 @@ class MediaPickerFragment : BaseFragment() {
 
         viewPager.adapter = adapter
         tabLayout.setupWithViewPager(viewPager)
+        arguments?.remove(OPEN_CAMERA_FIRST)
     }
 
     companion object {
 
-        fun newInstance(): MediaPickerFragment {
-            return MediaPickerFragment()
+        private const val OPEN_CAMERA_FIRST = "openCamera"
+
+        fun newInstance(shoudOpenCamera: Boolean): MediaPickerFragment {
+            val f = MediaPickerFragment()
+            val bun = Bundle()
+            bun.putBoolean(OPEN_CAMERA_FIRST, shoudOpenCamera)
+            f.arguments = bun
+            return f
         }
     }
 }// Required empty public constructor

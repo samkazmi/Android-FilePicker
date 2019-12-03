@@ -128,6 +128,12 @@ class FilePickerBuilder {
         start(context, requestCode)
     }
 
+    fun pickCamera(context: Activity, requestCode: Int) {
+        mPickerOptionsBundle.putInt(FilePickerConst.EXTRA_PICKER_TYPE, FilePickerConst.MEDIA_PICKER)
+        mPickerOptionsBundle.putBoolean(FilePickerConst.EXTRA_PICKER_CAMERA, true)
+        start(context, requestCode)
+    }
+
     fun pickPhoto(context: Fragment, requestCode: Int) {
         mPickerOptionsBundle.putInt(FilePickerConst.EXTRA_PICKER_TYPE, FilePickerConst.MEDIA_PICKER)
         start(context, requestCode)

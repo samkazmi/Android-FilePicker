@@ -40,6 +40,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     private var imageCaptureManager: ImageCaptureManager? = null
     private lateinit var mGlideRequestManager: RequestManager
     private var fileType: Int = 0
+    private var openCamera: Boolean = false
     private var data: MutableList<PhotoDirectory>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -71,6 +72,11 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView(view)
+        if (openCamera) {
+            onCameraClicked()
+            openCamera = false
+            arguments?.remove(OPEN_CAMERA)
+        }
     }
 
     private fun initView(view: View) {
@@ -78,6 +84,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
         emptyView = view.findViewById(R.id.empty_view)
         arguments?.let {
             fileType = it.getInt(BaseFragment.FILE_TYPE)
+            openCamera = it.getBoolean(OPEN_CAMERA, false)
             activity?.let {
                 imageCaptureManager = ImageCaptureManager(it)
             }
@@ -227,12 +234,14 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
 
         private val TAG = MediaFolderPickerFragment::class.java.simpleName
         private const val SCROLL_THRESHOLD = 30
+        private const val OPEN_CAMERA = "OPEN_Camera"
         private val PERMISSION_WRITE_EXTERNAL_STORAGE_RC = 908
 
-        fun newInstance(fileType: Int): MediaFolderPickerFragment {
+        fun newInstance(fileType: Int, openCamera: Boolean): MediaFolderPickerFragment {
             val photoPickerFragment = MediaFolderPickerFragment()
             val bun = Bundle()
             bun.putInt(BaseFragment.FILE_TYPE, fileType)
+            bun.putBoolean(OPEN_CAMERA, openCamera)
             photoPickerFragment.arguments = bun
             return photoPickerFragment
         }
