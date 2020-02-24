@@ -2,6 +2,7 @@ package vi.filepicker;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,8 +34,8 @@ import static vi.filepicker.MainActivity.RC_PHOTO_PICKER_PERM;
  */
 public class CallerFragment extends BaseFragment implements EasyPermissions.PermissionCallbacks {
   private int MAX_ATTACHMENT_COUNT = 10;
-  private ArrayList<String> photoPaths = new ArrayList<>();
-  private ArrayList<String> docPaths = new ArrayList<>();
+  private ArrayList<Uri> photoPaths = new ArrayList<>();
+  private ArrayList<Uri> docPaths = new ArrayList<>();
 
   public CallerFragment() {
     // Required empty public constructor
@@ -94,14 +95,14 @@ public class CallerFragment extends BaseFragment implements EasyPermissions.Perm
       case FilePickerConst.REQUEST_CODE_PHOTO:
         if (resultCode == Activity.RESULT_OK && data != null) {
           photoPaths = new ArrayList<>();
-          photoPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA));
+          photoPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA));
         }
         break;
 
       case FilePickerConst.REQUEST_CODE_DOC:
         if (resultCode == Activity.RESULT_OK && data != null) {
           docPaths = new ArrayList<>();
-          docPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
+          docPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
         }
         break;
     }
@@ -109,8 +110,8 @@ public class CallerFragment extends BaseFragment implements EasyPermissions.Perm
     addThemToView(photoPaths, docPaths);
   }
 
-  private void addThemToView(ArrayList<String> imagePaths, ArrayList<String> docPaths) {
-    ArrayList<String> filePaths = new ArrayList<>();
+  private void addThemToView(ArrayList<Uri> imagePaths, ArrayList<Uri> docPaths) {
+    ArrayList<Uri> filePaths = new ArrayList<>();
     if (imagePaths != null) filePaths.addAll(imagePaths);
 
     if (docPaths != null) filePaths.addAll(docPaths);

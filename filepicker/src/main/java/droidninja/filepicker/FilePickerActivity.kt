@@ -3,6 +3,7 @@ package droidninja.filepicker
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.ActionBar
 import android.text.TextUtils
@@ -27,7 +28,7 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
     override fun initView() {
         val intent = intent
         if (intent != null) {
-            var selectedPaths: ArrayList<String>? = intent.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA)
+            var selectedPaths: ArrayList<Uri>? = intent.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA)
             type = intent.getIntExtra(FilePickerConst.EXTRA_PICKER_TYPE, FilePickerConst.MEDIA_PICKER)
             shouldOpenCamera = intent.getBooleanExtra(FilePickerConst.EXTRA_PICKER_CAMERA, false)
 
@@ -130,12 +131,12 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
         }
     }
 
-    private fun returnData(paths: ArrayList<String>) {
+    private fun returnData(paths: ArrayList<Uri>) {
         val intent = Intent()
         if (type == FilePickerConst.MEDIA_PICKER) {
-            intent.putStringArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA, paths)
+            intent.putParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA, paths)
         } else {
-            intent.putStringArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS, paths)
+            intent.putParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS, paths)
         }
 
         setResult(Activity.RESULT_OK, intent)

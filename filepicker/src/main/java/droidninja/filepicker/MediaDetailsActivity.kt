@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.ActionBar
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.OrientationHelper
@@ -115,6 +116,7 @@ class MediaDetailsActivity : BaseFilePickerActivity(), FileAdapterListener {
                     override fun onResultCallback(files: List<PhotoDirectory>) {
                         if(!isFinishing || !isDestroyed) {
                             updateList(files.toMutableList())
+                            Log.v("directory", files.toString())
                         }
                     }
                 })

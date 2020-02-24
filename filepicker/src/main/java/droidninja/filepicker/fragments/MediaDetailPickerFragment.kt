@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -142,6 +143,7 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
                         override fun onResultCallback(files: List<PhotoDirectory>) {
                             if (isAdded) {
                                 updateList(files)
+                                Log.v("directory", files.toString())
                             }
                         }
                     })

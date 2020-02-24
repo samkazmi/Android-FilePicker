@@ -1,8 +1,12 @@
 package droidninja.filepicker.models;
 
+import android.net.Uri;
+
 import droidninja.filepicker.FilePickerConst;
 import droidninja.filepicker.utils.FilePickerUtils;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by droidNinja on 29/07/16.
@@ -12,7 +16,7 @@ public class Document extends BaseFile {
     private String size;
     private FileType fileType;
 
-    public Document(int id, String title, String path) {
+    public Document(int id, String title, Uri path) {
         super(id,title,path);
     }
 
@@ -35,11 +39,11 @@ public class Document extends BaseFile {
         return id;
     }
 
-    public String getPath() {
+    public Uri getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(Uri path) {
         this.path = path;
     }
 
@@ -68,16 +72,15 @@ public class Document extends BaseFile {
     }
 
     public String getTitle() {
-        return new File(this.path).getName();
+        return name;
     }
 
     public void setTitle(String title) {
         this.name = title;
     }
 
-    public boolean isThisType(String[] types)
-    {
-        return FilePickerUtils.INSTANCE.contains(types, this.path);
+    public boolean isThisType(String[] types) {
+        return Arrays.asList(types).contains(mimeType);
     }
 
     public FileType getFileType()

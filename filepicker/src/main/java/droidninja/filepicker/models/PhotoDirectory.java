@@ -1,5 +1,6 @@
 package droidninja.filepicker.models;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -10,7 +11,7 @@ import java.util.List;
 public class PhotoDirectory extends BaseFile implements Parcelable{
 
   private String bucketId;
-  private String coverPath;
+  private Uri coverPath;
   private String name;
   private long   dateAdded;
   private List<Media> medias = new ArrayList<>();
@@ -20,13 +21,13 @@ public class PhotoDirectory extends BaseFile implements Parcelable{
     super();
   }
 
-  public PhotoDirectory(int id, String name, String path) {
+  public PhotoDirectory(int id, String name, Uri path) {
     super(id, name, path);
   }
 
   protected PhotoDirectory(Parcel in) {
     bucketId = in.readString();
-    coverPath = in.readString();
+    coverPath = in.readParcelable(Uri.class.getClassLoader());
     name = in.readString();
     dateAdded = in.readLong();
   }
@@ -84,16 +85,13 @@ public class PhotoDirectory extends BaseFile implements Parcelable{
     return result;
   }
 
-  public String getCoverPath() {
-    if(medias!=null && medias.size()>0)
-      return medias.get(0).getPath();
-    else if(coverPath!=null)
-      return coverPath;
-    else
-    return "";
+
+
+  public Uri getCoverPath() {
+    return coverPath;
   }
 
-  public void setCoverPath(String coverPath) {
+  public void setCoverPath(Uri coverPath) {
     this.coverPath = coverPath;
   }
 
@@ -121,15 +119,15 @@ public class PhotoDirectory extends BaseFile implements Parcelable{
     this.medias = medias;
   }
 
-  public List<String> getPhotoPaths() {
-    List<String> paths = new ArrayList<>(medias.size());
+  public List<Uri> getPhotoPaths() {
+    List<Uri> paths = new ArrayList<>(medias.size());
     for (Media media : medias) {
       paths.add(media.getPath());
     }
     return paths;
   }
 
-  public void addPhoto(int id, String name, String path, int mediaType) {
+  public void addPhoto(int id, String name, Uri path, int mediaType) {
     medias.add(new Media(id, name, path, mediaType));
   }
 
@@ -159,7 +157,7 @@ public class PhotoDirectory extends BaseFile implements Parcelable{
   @Override
   public void writeToParcel(Parcel parcel, int i) {
     parcel.writeString(bucketId);
-    parcel.writeString(coverPath);
+    parcel.writeParcelable(coverPath, i);
     parcel.writeString(name);
     parcel.writeLong(dateAdded);
   }

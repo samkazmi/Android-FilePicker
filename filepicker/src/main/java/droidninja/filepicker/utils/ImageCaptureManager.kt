@@ -76,7 +76,7 @@ class ImageCaptureManager(private val mContext: Context) {
     }
 
 
-    fun notifyMediaStoreDatabase(): String? {
+    fun notifyMediaStoreDatabase(): Uri? {
         val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
 
         if (TextUtils.isEmpty(currentPhotoPath)) {
@@ -88,7 +88,7 @@ class ImageCaptureManager(private val mContext: Context) {
         mediaScanIntent.data = contentUri
         mContext.sendBroadcast(mediaScanIntent)
 
-        return currentPhotoPath
+        return contentUri
     }
 
 

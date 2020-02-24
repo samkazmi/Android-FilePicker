@@ -130,6 +130,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                         override fun onResultCallback(files: List<PhotoDirectory>) {
                             if(isAdded) {
                                 updateList(files.toMutableList())
+                                Log.v("directory", files.toString())
                             }
                         }
                     })

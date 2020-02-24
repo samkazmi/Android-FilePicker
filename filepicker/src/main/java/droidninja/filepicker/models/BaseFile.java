@@ -1,5 +1,6 @@
 package droidninja.filepicker.models;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import droidninja.filepicker.utils.FilePickerUtils;
@@ -10,13 +11,13 @@ import droidninja.filepicker.utils.FilePickerUtils;
 public class BaseFile implements Parcelable {
   protected int id;
   protected String name;
-  protected String path;
+  protected Uri path;
 
   public BaseFile() {
 
   }
 
-  public BaseFile(int id, String name, String path) {
+  public BaseFile(int id, String name, Uri path) {
     this.id = id;
     this.name = name;
     this.path = path;
@@ -25,7 +26,7 @@ public class BaseFile implements Parcelable {
   protected BaseFile(Parcel in) {
     id = in.readInt();
     name = in.readString();
-    path = in.readString();
+    path = in.readParcelable(Uri.class.getClassLoader());
   }
 
   public static final Creator<BaseFile> CREATOR = new Creator<BaseFile>() {
@@ -38,10 +39,10 @@ public class BaseFile implements Parcelable {
     }
   };
 
-  public boolean isImage() {
+ /* public boolean isImage() {
     String[] types = { "jpg", "jpeg", "png", "gif" };
     return FilePickerUtils.INSTANCE.contains(types, this.path);
-  }
+  }*/
 
   @Override public boolean equals(Object o) {
     if (this == o) return true;
@@ -54,11 +55,11 @@ public class BaseFile implements Parcelable {
       return id == baseFile.id;
   }
 
-  public String getPath() {
+  public Uri getPath() {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(Uri path) {
     this.path = path;
   }
 
@@ -74,9 +75,10 @@ public class BaseFile implements Parcelable {
     return 0;
   }
 
-  @Override public void writeToParcel(Parcel parcel, int i) {
+  @Override
+  public void writeToParcel(Parcel parcel, int flag) {
     parcel.writeInt(id);
     parcel.writeString(name);
-    parcel.writeString(path);
+    parcel.writeParcelable(path, flag);
   }
 }

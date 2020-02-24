@@ -1,31 +1,20 @@
 package droidninja.filepicker.cursors
 
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import android.provider.MediaStore
-import android.text.TextUtils
-
-import java.io.File
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import java.util.HashMap
-
-import droidninja.filepicker.PickerManager
-import droidninja.filepicker.cursors.loadercallbacks.FileMapResultCallback
-import droidninja.filepicker.models.Document
-import droidninja.filepicker.models.FileType
-import droidninja.filepicker.utils.FilePickerUtils
-
 import android.provider.BaseColumns._ID
-import android.provider.MediaStore.MediaColumns.DATA
+import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import droidninja.filepicker.FilePickerConst
+import droidninja.filepicker.PickerManager
 import droidninja.filepicker.cursors.loadercallbacks.FileResultCallback
 import droidninja.filepicker.models.PhotoDirectory
-import java.util.function.Predicate
+import java.util.*
 
 /**
  * Created by droidNinja on 01/08/16.
@@ -53,7 +42,6 @@ class PhotoScannerTask(val contentResolver: ContentResolver, private val args:Bu
             selection += " AND " + MediaStore.Images.Media.BUCKET_ID + "='" + bucketId + "'"
 
         val cursor = contentResolver.query(uri, projection, selection, null, sortOrder)
-
         if (cursor != null) {
             val data = getPhotoDirectories(cursor)
             cursor.close()
@@ -78,16 +66,17 @@ class PhotoScannerTask(val contentResolver: ContentResolver, private val args:Bu
             val imageId = data.getInt(data.getColumnIndexOrThrow(_ID))
             val bucketId = data.getString(data.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_ID))
             val name = data.getString(data.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME))
-            val path = data.getString(data.getColumnIndexOrThrow(DATA))
+
             val fileName = data.getString(data.getColumnIndexOrThrow(MediaStore.MediaColumns.TITLE))
             val mediaType = data.getInt(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE))
-
+            val path = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getLong(data.getColumnIndexOrThrow(_ID)))
             val photoDirectory = PhotoDirectory()
             photoDirectory.bucketId = bucketId
             photoDirectory.name = name
 
             if (!directories.contains(photoDirectory)) {
-                if (path != null && path.toLowerCase().endsWith("gif")) {
+                val type = getMimeType(path)
+                if (type != null && type.toLowerCase().endsWith("gif")) {
                     if (PickerManager.isShowGif) {
                         photoDirectory.addPhoto(imageId, fileName, path, mediaType)
                     }
@@ -104,5 +93,10 @@ class PhotoScannerTask(val contentResolver: ContentResolver, private val args:Bu
         }
 
         return directories
+    }
+
+    fun getMimeType(uri: Uri): String? {
+        val mime = MimeTypeMap.getSingleton()
+        return mime.getExtensionFromMimeType(contentResolver.getType(uri))
     }
 }

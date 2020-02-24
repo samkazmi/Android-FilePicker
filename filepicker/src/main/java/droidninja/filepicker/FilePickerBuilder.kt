@@ -3,6 +3,7 @@ package droidninja.filepicker
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.DrawableRes
@@ -36,8 +37,8 @@ class FilePickerBuilder {
         return this
     }
 
-    fun setSelectedFiles(selectedPhotos: ArrayList<String>): FilePickerBuilder {
-        mPickerOptionsBundle.putStringArrayList(FilePickerConst.KEY_SELECTED_MEDIA, selectedPhotos)
+    fun setSelectedFiles(selectedPhotos: ArrayList<Uri>): FilePickerBuilder {
+        mPickerOptionsBundle.putParcelableArrayList(FilePickerConst.KEY_SELECTED_MEDIA, selectedPhotos)
         return this
     }
 
@@ -87,14 +88,14 @@ class FilePickerBuilder {
         return this
     }
 
-    fun addFileSupport(title: String, extensions: Array<String>,
+    fun addFileSupport(title: String, mimeType: Array<String>,
                        @DrawableRes drawable: Int): FilePickerBuilder {
-        PickerManager.addFileType(FileType(title, extensions, drawable))
+        PickerManager.addFileType(FileType(title, mimeType, drawable))
         return this
     }
 
-    fun addFileSupport(title: String, extensions: Array<String>): FilePickerBuilder {
-        PickerManager.addFileType(FileType(title, extensions, 0))
+    fun addFileSupport(title: String, mimeType: Array<String>): FilePickerBuilder {
+        PickerManager.addFileType(FileType(title, mimeType, 0))
         return this
     }
 

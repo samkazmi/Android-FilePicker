@@ -1,6 +1,7 @@
 package droidninja.filepicker.adapters
 
 import android.content.Context
+import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.text.format.Formatter
 import android.view.LayoutInflater
@@ -22,7 +23,7 @@ import droidninja.filepicker.views.SmoothCheckBox
 /**
  * Created by droidNinja on 29/07/16.
  */
-class FileListAdapter(private val context: Context, private var mFilteredList: List<Document>, selectedPaths: List<String>,
+class FileListAdapter(private val context: Context, private var mFilteredList: List<Document>, selectedPaths: List<Uri>,
                       private val mListener: FileAdapterListener?) : SelectableAdapter<FileListAdapter.FileViewHolder, Document>(mFilteredList, selectedPaths), Filterable {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
@@ -91,7 +92,7 @@ class FileListAdapter(private val context: Context, private var mFilteredList: L
 
     override fun getFilter(): Filter {
         return object : Filter() {
-            override fun performFiltering(charSequence: CharSequence): Filter.FilterResults {
+            override fun performFiltering(charSequence: CharSequence): FilterResults {
 
                 val charString = charSequence.toString()
 
@@ -113,13 +114,13 @@ class FileListAdapter(private val context: Context, private var mFilteredList: L
                     mFilteredList = filteredList
                 }
 
-                val filterResults = Filter.FilterResults()
+                val filterResults = FilterResults()
                 filterResults.values = mFilteredList
                 return filterResults
             }
 
             @Suppress("UNCHECKED_CAST")
-            override fun publishResults(charSequence: CharSequence, filterResults: Filter.FilterResults) {
+            override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
                     mFilteredList = filterResults.values as List<Document>
                     notifyDataSetChanged()
             }

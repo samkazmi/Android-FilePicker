@@ -1,27 +1,17 @@
 package droidninja.filepicker.cursors
 
 import android.content.ContentResolver
-import android.content.Context
+import android.content.ContentUris
 import android.database.Cursor
 import android.os.AsyncTask
+import android.provider.BaseColumns._ID
 import android.provider.MediaStore
 import android.text.TextUtils
-
-import java.io.File
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import java.util.HashMap
-
 import droidninja.filepicker.PickerManager
 import droidninja.filepicker.cursors.loadercallbacks.FileMapResultCallback
 import droidninja.filepicker.models.Document
 import droidninja.filepicker.models.FileType
-import droidninja.filepicker.utils.FilePickerUtils
-
-import android.provider.BaseColumns._ID
-import android.provider.MediaStore.MediaColumns.DATA
-import java.util.function.Predicate
+import java.util.*
 
 /**
  * Created by droidNinja on 01/08/16.
@@ -29,13 +19,13 @@ import java.util.function.Predicate
 class DocScannerTask(val contentResolver: ContentResolver, private val fileTypes: List<FileType>, private val comparator: Comparator<Document>?,
                      private val resultCallback: FileMapResultCallback?) : AsyncTask<Void, Void, Map<FileType, List<Document>>>() {
 
-    private val DOC_PROJECTION = arrayOf(MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.MIME_TYPE, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_ADDED, MediaStore.Files.FileColumns.TITLE)
+    private val DOC_PROJECTION = arrayOf(MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.MIME_TYPE, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_ADDED, MediaStore.Files.FileColumns.TITLE)
 
     private fun createDocumentType(documents: ArrayList<Document>): HashMap<FileType, List<Document>> {
         val documentMap = HashMap<FileType, List<Document>>()
 
         for (fileType in fileTypes) {
-            val documentListFilteredByType = documents.filter { document -> document.isThisType(fileType.extensions) }
+            val documentListFilteredByType = documents.filter { document -> document.isThisType(fileType.mimeType) }
 
             comparator?.let {
                 documentListFilteredByType.sortedWith(comparator)
@@ -77,39 +67,30 @@ class DocScannerTask(val contentResolver: ContentResolver, private val fileTypes
         while (data.moveToNext()) {
 
             val imageId = data.getInt(data.getColumnIndexOrThrow(_ID))
-            val path = data.getString(data.getColumnIndexOrThrow(DATA))
+            val path = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getLong(0))
             val title = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.TITLE))
 
-            if (path != null) {
-
-                val fileType = getFileType(PickerManager.getFileTypes(), path)
-                val file = File(path)
-                if (fileType != null && !file.isDirectory && file.exists()) {
-
-                    val document = Document(imageId, title, path)
-                    document.fileType = fileType
-
-                    val mimeType = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE))
-                    if (mimeType != null && !TextUtils.isEmpty(mimeType)) {
-                        document.mimeType = mimeType
-                    } else {
-                        document.mimeType = ""
-                    }
-
-                    document.size = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE))
-
-                    if (!documents.contains(document)) documents.add(document)
-                }
+            val document = Document(imageId, title, path)
+            val mimeType = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE))
+            if (mimeType != null && !TextUtils.isEmpty(mimeType)) {
+                document.mimeType = mimeType
+            } else {
+                document.mimeType = ""
             }
+            document.fileType = getFileType(PickerManager.getFileTypes(), document.mimeType)
+            document.size = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE))
+
+            if (!documents.contains(document)) documents.add(document)
+            //      }
         }
 
         return documents
     }
 
-    private fun getFileType(types: ArrayList<FileType>, path: String): FileType? {
+    private fun getFileType(types: ArrayList<FileType>, mimeType: String?): FileType? {
         for (index in types.indices) {
-            for (string in types[index].extensions) {
-                if (path.endsWith(string)) return types[index]
+            for (type in types[index].mimeType) {
+                if (mimeType == type) return types[index]
             }
         }
         return null

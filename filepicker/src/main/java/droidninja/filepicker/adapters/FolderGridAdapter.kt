@@ -1,6 +1,7 @@
 package droidninja.filepicker.adapters
 
 import android.content.Context
+import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -21,7 +22,7 @@ import droidninja.filepicker.R
 import droidninja.filepicker.models.PhotoDirectory
 import droidninja.filepicker.utils.AndroidLifecycleUtils
 
-class FolderGridAdapter(private val context: Context, private val glide: RequestManager, photos: MutableList<PhotoDirectory>, selectedPaths: MutableList<String>, private val showCamera: Boolean) : SelectableAdapter<FolderGridAdapter.PhotoViewHolder, PhotoDirectory>(photos, selectedPaths) {
+class FolderGridAdapter(private val context: Context, private val glide: RequestManager, photos: MutableList<PhotoDirectory>, selectedPaths: MutableList<Uri>, private val showCamera: Boolean) : SelectableAdapter<FolderGridAdapter.PhotoViewHolder, PhotoDirectory>(photos, selectedPaths) {
     private var imageSize: Int = 0
     private var folderGridAdapterListener: FolderGridAdapterListener? = null
 
@@ -53,7 +54,7 @@ class FolderGridAdapter(private val context: Context, private val glide: Request
             val photoDirectory = items[if (showCamera) position - 1 else position]
 
             if (AndroidLifecycleUtils.canLoadImage(holder.imageView.context)) {
-                glide.load(File(photoDirectory.coverPath))
+                glide.load(photoDirectory.medias[0].path)
                         .apply(RequestOptions
                                 .centerCropTransform()
                                 .override(imageSize, imageSize)

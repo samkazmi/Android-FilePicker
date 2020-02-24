@@ -1,6 +1,7 @@
 package droidninja.filepicker
 
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import java.util.ArrayList
 
 import droidninja.filepicker.models.BaseFile
@@ -17,8 +18,8 @@ object PickerManager {
     var cameraDrawable = R.drawable.ic_camera_placeholder
     var sortingType = SortingTypes.none
 
-    val selectedPhotos: ArrayList<String> = ArrayList()
-    val selectedFiles: ArrayList<String> = ArrayList()
+    val selectedPhotos: ArrayList<Uri> = ArrayList()
+    val selectedFiles: ArrayList<Uri> = ArrayList()
 
     private val fileTypes: LinkedHashSet<FileType> = LinkedHashSet()
 
@@ -76,7 +77,7 @@ object PickerManager {
         return maxCount
     }
 
-    fun add(path: String?, type: Int) {
+    fun add(path: Uri?, type: Int) {
         if (path != null && shouldAdd()) {
             if (!selectedPhotos.contains(path) && type == FilePickerConst.FILE_TYPE_MEDIA) {
                 selectedPhotos.add(path)
@@ -88,13 +89,13 @@ object PickerManager {
         }
     }
 
-    fun add(paths: ArrayList<String>, type: Int) {
+    fun add(paths: ArrayList<Uri>, type: Int) {
         for (index in paths.indices) {
             add(paths[index], type)
         }
     }
 
-    fun remove(path: String, type: Int) {
+    fun remove(path: Uri, type: Int) {
         if (type == FilePickerConst.FILE_TYPE_MEDIA && selectedPhotos.contains(path)) {
             selectedPhotos.remove(path)
         } else if (type == FilePickerConst.FILE_TYPE_DOCUMENT) {
@@ -106,8 +107,8 @@ object PickerManager {
         return if (maxCount == -1) true else currentCount < maxCount
     }
 
-    fun getSelectedFilePaths(files: ArrayList<BaseFile>): ArrayList<String> {
-        val paths = ArrayList<String>()
+    fun getSelectedFilePaths(files: ArrayList<BaseFile>): ArrayList<Uri> {
+        val paths = ArrayList<Uri>()
         for (index in files.indices) {
             paths.add(files[index].path)
         }
@@ -126,7 +127,7 @@ object PickerManager {
         selectedFiles.clear()
     }
 
-    fun deleteMedia(paths: ArrayList<String>) {
+    fun deleteMedia(paths: ArrayList<Uri>) {
         selectedPhotos.removeAll(paths)
     }
 
@@ -151,19 +152,19 @@ object PickerManager {
     }
 
     fun addDocTypes() {
-        val pdfs = arrayOf("pdf")
+        val pdfs = arrayOf("application/pdf")
         fileTypes.add(FileType(FilePickerConst.PDF, pdfs, R.drawable.icon_file_pdf))
 
-        val docs = arrayOf("doc", "docx", "dot", "dotx")
+        val docs = arrayOf("application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         fileTypes.add(FileType(FilePickerConst.DOC, docs, R.drawable.icon_file_doc))
 
-        val ppts = arrayOf("ppt", "pptx")
+        val ppts = arrayOf("application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation")
         fileTypes.add(FileType(FilePickerConst.PPT, ppts, R.drawable.icon_file_ppt))
 
-        val xlss = arrayOf("xls", "xlsx")
+        val xlss = arrayOf("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         fileTypes.add(FileType(FilePickerConst.XLS, xlss, R.drawable.icon_file_xls))
 
-        val txts = arrayOf("txt")
+        val txts = arrayOf("text/plain")
         fileTypes.add(FileType(FilePickerConst.TXT, txts, R.drawable.icon_file_unknown))
     }
 

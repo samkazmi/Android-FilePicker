@@ -14,18 +14,18 @@ public class FileType implements Parcelable{
     @DrawableRes
     public int drawable;
 
-    public String[] extensions;
+    public String[] mimeType;
 
-    public FileType(String title, String[] extensions, int drawable) {
+    public FileType(String title, String[] mimeType, int drawable) {
         this.title = title;
-        this.extensions = extensions;
+        this.mimeType = mimeType;
         this.drawable = drawable;
     }
 
     protected FileType(Parcel in) {
         title = in.readString();
         drawable = in.readInt();
-        extensions = in.createStringArray();
+        mimeType = in.createStringArray();
     }
 
     public static final Creator<FileType> CREATOR = new Creator<FileType>() {
@@ -56,7 +56,7 @@ public class FileType implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(title);
         parcel.writeInt(drawable);
-        parcel.writeStringArray(extensions);
+        parcel.writeStringArray(mimeType);
     }
 
     @Override public boolean equals(Object o) {

@@ -1,10 +1,12 @@
 package droidninja.filepicker.models;
 
+import android.net.Uri;
+
 public class Media extends BaseFile {
 
   public int mediaType;
 
-  public Media(int id, String name, String path, int mediaType) {
+  public Media(int id, String name, Uri path, int mediaType) {
     super(id, name, path);
     this.mediaType = mediaType;
   }
@@ -26,14 +28,6 @@ public class Media extends BaseFile {
   @Override
   public int hashCode() {
     return id;
-  }
-
-  public String getPath() {
-    return (path!=null)?path:"";
-  }
-
-  public void setPath(String path) {
-    this.path = path;
   }
 
   public int getId() {
