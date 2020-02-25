@@ -67,7 +67,7 @@ class DocScannerTask(val contentResolver: ContentResolver, private val fileTypes
         while (data.moveToNext()) {
 
             val imageId = data.getInt(data.getColumnIndexOrThrow(_ID))
-            val path = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getLong(0))
+            val path = ContentUris.withAppendedId(MediaStore.Files.getContentUri("external"), data.getLong(0))
             val title = data.getString(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.TITLE))
 
             val document = Document(imageId, title, path)

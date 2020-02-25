@@ -25,4 +25,11 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
+    <Button
+        android:id="@+id/bAccessStorage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:text="@string/allow_storage_access"/>
 </RelativeLayout>

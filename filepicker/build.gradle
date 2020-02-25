@@ -29,6 +29,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
     testImplementation 'junit:junit:4.12'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.documentfile:documentfile:1.0.1'
 }
 
 def siteUrl = 'https://github.com/DroidNinja/Android-FilePicker'      // Homepage URL of the library

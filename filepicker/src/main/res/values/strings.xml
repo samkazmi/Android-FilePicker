@@ -25,5 +25,6 @@
     <string name="all_photos">All Photos</string>
     <string name="all_videos">All Videos</string>
     <string name="all_files">All Files</string>
+    <string name="allow_storage_access">Allow Storage Access</string>
 
 </resources>

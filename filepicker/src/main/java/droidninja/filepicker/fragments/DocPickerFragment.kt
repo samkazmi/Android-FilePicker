@@ -1,13 +1,18 @@
 package droidninja.filepicker.fragments
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager.widget.ViewPager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.documentfile.provider.DocumentFile
 
 import java.util.ArrayList
 
@@ -19,6 +24,7 @@ import droidninja.filepicker.models.Document
 import droidninja.filepicker.models.FileType
 import droidninja.filepicker.utils.MediaStoreHelper
 import droidninja.filepicker.utils.TabLayoutHelper
+import java.util.HashMap
 
 class DocPickerFragment : BaseFragment() {
 
@@ -57,8 +63,13 @@ class DocPickerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setViews(view)
-        initView()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42)
+        } else {
+            setViews(view)
+            initView()
+        }
+
     }
 
     private fun initView() {
@@ -124,6 +135,45 @@ class DocPickerFragment : BaseFragment() {
 
         val mTabLayoutHelper = TabLayoutHelper(tabLayout, viewPager)
         mTabLayoutHelper.isAutoAdjustTabModeEnabled = true
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            val treeUri = data.data
+            if (treeUri != null)
+                activity?.let { activity ->
+                    val pickedDir = DocumentFile.fromTreeUri(activity, treeUri)
+                    activity.grantUriPermission(activity.packageName, treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        activity.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    }
+
+                    pickedDir?.listFiles()?.forEach {
+                        Log.v("files", it.name + " type: " + it.type + " isFile: " + it.isFile);
+                    }
+                }
+        }
+
+    }
+
+
+    private fun createDocumentType(documents: ArrayList<Document>): HashMap<FileType, List<Document>> {
+        val documentMap = HashMap<FileType, List<Document>>()
+        val fileTypes = PickerManager.getFileTypes()
+        val comparator = PickerManager.sortingType.comparator
+        for (fileType in fileTypes) {
+            val documentListFilteredByType = documents.filter { document -> document.isThisType(fileType.mimeType) }
+
+            comparator?.let {
+                documentListFilteredByType.sortedWith(comparator)
+            }
+
+            documentMap[fileType] = documentListFilteredByType
+        }
+
+        return documentMap
     }
 
     companion object {

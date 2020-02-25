@@ -5,15 +5,20 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -22,6 +27,9 @@ import droidninja.filepicker.FilePickerBuilder;
 import droidninja.filepicker.FilePickerConst;
 import droidninja.filepicker.models.sort.SortingTypes;
 import java.util.List;
+import java.util.prefs.Preferences;
+import java.util.prefs.PreferencesFactory;
+
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -88,6 +96,21 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (resultCode == Activity.RESULT_OK && data != null) {
           docPaths = new ArrayList<>();
           docPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
+        }
+        break;
+
+      case 42:
+        if (resultCode == Activity.RESULT_OK && data != null) {
+          Uri treeUri = data.getData();
+          DocumentFile pickedDir = DocumentFile.fromTreeUri(this, treeUri);
+          grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          }
+
+          for (int i = 0; i < pickedDir.listFiles().length; i++) {
+            Log.v("files", pickedDir.listFiles()[i].getName() + " type: " + pickedDir.listFiles()[i].getType() + " isFile: " + pickedDir.listFiles()[i].isFile());
+          }
         }
         break;
     }

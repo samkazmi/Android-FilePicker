@@ -2,7 +2,6 @@ package droidninja.filepicker.cursors
 
 import android.content.ContentResolver
 import android.content.ContentUris
-import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.AsyncTask
@@ -60,7 +59,7 @@ class PhotoScannerTask(val contentResolver: ContentResolver, private val args:Bu
 
     private fun getPhotoDirectories(data: Cursor): MutableList<PhotoDirectory> {
         val directories = ArrayList<PhotoDirectory>()
-
+        val mediaTypeFromAbove = args.getInt(FilePickerConst.EXTRA_FILE_TYPE, FilePickerConst.MEDIA_TYPE_IMAGE)
         while (data.moveToNext()) {
 
             val imageId = data.getInt(data.getColumnIndexOrThrow(_ID))
@@ -69,7 +68,19 @@ class PhotoScannerTask(val contentResolver: ContentResolver, private val args:Bu
 
             val fileName = data.getString(data.getColumnIndexOrThrow(MediaStore.MediaColumns.TITLE))
             val mediaType = data.getInt(data.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE))
-            val path = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getLong(data.getColumnIndexOrThrow(_ID)))
+            val contentUri = when (mediaTypeFromAbove) {
+                FilePickerConst.MEDIA_TYPE_IMAGE -> {
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                }
+                FilePickerConst.MEDIA_TYPE_VIDEO -> {
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                }
+                else -> { // ?
+                    MediaStore.Files.getContentUri("external")
+                }
+            }
+            val path = ContentUris.withAppendedId(contentUri, data.getLong(data.getColumnIndexOrThrow(_ID)))
+
             val photoDirectory = PhotoDirectory()
             photoDirectory.bucketId = bucketId
             photoDirectory.name = name

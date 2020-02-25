@@ -1,9 +1,12 @@
 package droidninja.filepicker.adapters
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.provider.DocumentsProvider
 import androidx.recyclerview.widget.RecyclerView
 import android.util.DisplayMetrics
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,7 +41,6 @@ class PhotoGridAdapter(private val context: Context,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val itemView = LayoutInflater.from(context).inflate(R.layout.item_photo_layout, parent, false)
-
         return PhotoViewHolder(itemView)
     }
 
@@ -63,7 +65,6 @@ class PhotoGridAdapter(private val context: Context,
                         .thumbnail(0.5f)
                         .into(holder.imageView)
             }
-
 
             if (media.getMediaType() == FilePickerConst.MEDIA_TYPE_VIDEO)
                 holder.videoIcon.visibility = View.VISIBLE
