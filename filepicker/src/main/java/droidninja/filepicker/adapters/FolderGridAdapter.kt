@@ -54,13 +54,14 @@ class FolderGridAdapter(private val context: Context, private val glide: Request
             val photoDirectory = items[if (showCamera) position - 1 else position]
 
             if (AndroidLifecycleUtils.canLoadImage(holder.imageView.context)) {
-                glide.load(photoDirectory.medias[0].path)
-                        .apply(RequestOptions
-                                .centerCropTransform()
-                                .override(imageSize, imageSize)
-                                .placeholder(R.drawable.image_placeholder))
-                        .thumbnail(0.5f)
-                        .into(holder.imageView)
+                if (photoDirectory.medias.isNotEmpty())
+                    glide.load(photoDirectory.medias[0].path)
+                            .apply(RequestOptions
+                                    .centerCropTransform()
+                                    .override(imageSize, imageSize)
+                                    .placeholder(R.drawable.image_placeholder))
+                            .thumbnail(0.5f)
+                            .into(holder.imageView)
             }
 
             holder.folderTitle.text = photoDirectory.name

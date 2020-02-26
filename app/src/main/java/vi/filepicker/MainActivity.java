@@ -89,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (resultCode == Activity.RESULT_OK && data != null) {
           photoPaths = new ArrayList<>();
           photoPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA));
+          for (int i = 0; i < photoPaths.size(); i++) {
+            Log.v("video paths", photoPaths.get(i).getPath());
+          }
         }
         break;
 
@@ -96,6 +99,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (resultCode == Activity.RESULT_OK && data != null) {
           docPaths = new ArrayList<>();
           docPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
+
+          for (int i = 0; i < docPaths.size(); i++) {
+            Log.v("video paths", docPaths.get(i).getPath());
+          }
+
         }
         break;
     }
