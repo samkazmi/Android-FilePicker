@@ -98,21 +98,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
           docPaths.addAll(data.<Uri>getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
         }
         break;
-
-      case 42:
-        if (resultCode == Activity.RESULT_OK && data != null) {
-          Uri treeUri = data.getData();
-          DocumentFile pickedDir = DocumentFile.fromTreeUri(this, treeUri);
-          grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-          }
-
-          for (int i = 0; i < pickedDir.listFiles().length; i++) {
-            Log.v("files", pickedDir.listFiles()[i].getName() + " type: " + pickedDir.listFiles()[i].getType() + " isFile: " + pickedDir.listFiles()[i].isFile());
-          }
-        }
-        break;
     }
 
     addThemToView(photoPaths, docPaths);
@@ -165,8 +150,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
   }
 
   public void onPickDoc() {
-    String[] zips = { ".zip", ".rar" };
-    String[] pdfs = { ".pdf" };
+    String[] zips = { "application/zip", "application/vnd.rar" };
+    String[] pdfs = { "application/pdf" };
     int maxCount = MAX_ATTACHMENT_COUNT - photoPaths.size();
     if ((docPaths.size() + photoPaths.size()) == MAX_ATTACHMENT_COUNT) {
       Toast.makeText(this, "Cannot select more than " + MAX_ATTACHMENT_COUNT + " items",
@@ -179,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
           .setActivityTitle("Please select doc")
           .addFileSupport("ZIP", zips)
           .addFileSupport("PDF", pdfs, R.drawable.pdf_blue)
-          .enableDocSupport(true)
+          .enableDocSupport(false)
           .enableSelectAll(true)
           .sortDocumentsBy(SortingTypes.name)
           .withOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)

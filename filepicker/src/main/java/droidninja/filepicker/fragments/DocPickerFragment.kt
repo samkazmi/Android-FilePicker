@@ -3,16 +3,19 @@ package droidninja.filepicker.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.UriPermission
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager.widget.ViewPager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
+import androidx.annotation.RequiresApi
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.FragmentActivity
 
 import java.util.ArrayList
 
@@ -32,8 +35,9 @@ class DocPickerFragment : BaseFragment() {
 
     lateinit var viewPager: ViewPager
     private var progressBar: ProgressBar? = null
+    private var bAccessStorage: Button? = null
+    private var bChangeAccessStorage: Button? = null
     private var mListener: DocPickerFragmentListener? = null
-
     interface DocPickerFragmentListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,24 +67,41 @@ class DocPickerFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42)
-        } else {
-            setViews(view)
-            initView()
-        }
-
-    }
-
-    private fun initView() {
+        setViews(view)
         setUpViewPager()
-        setData()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity?.let {
+                val b = checkIfListIsAvailable(it, null)
+                if (!b) {
+                    tabLayout.visibility = View.GONE
+                    progressBar?.visibility = View.GONE
+                    bChangeAccessStorage?.visibility = View.GONE
+                }
+            }
+        } else {
+            bAccessStorage?.visibility = View.GONE
+            tabLayout.visibility = View.VISIBLE
+            progressBar?.visibility = View.VISIBLE
+            bChangeAccessStorage?.visibility = View.VISIBLE
+            setData()
+        }
+        bAccessStorage?.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42)
+            }
+        }
+        bChangeAccessStorage?.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42)
+            }
+        }
     }
-
     private fun setViews(view: View) {
         tabLayout = view.findViewById(R.id.tabs)
         viewPager = view.findViewById(R.id.viewPager)
         progressBar = view.findViewById(R.id.progress_bar)
+        bAccessStorage = view.findViewById(R.id.bAccessStorage)
+        bChangeAccessStorage = view.findViewById(R.id.bChangeAccessStorage)
 
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
@@ -126,7 +147,7 @@ class DocPickerFragment : BaseFragment() {
         val adapter = SectionsPagerAdapter(childFragmentManager)
         val supportedTypes = PickerManager.getFileTypes()
         for (index in supportedTypes.indices) {
-            adapter.addFragment(DocFragment.newInstance(supportedTypes.get(index)), supportedTypes.get(index).title)
+            adapter.addFragment(DocFragment.newInstance(supportedTypes.get(index)), supportedTypes[index].title)
         }
 
         viewPager.offscreenPageLimit = supportedTypes.size
@@ -141,21 +162,47 @@ class DocPickerFragment : BaseFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && data != null) {
-            val treeUri = data.data
-            if (treeUri != null)
-                activity?.let { activity ->
-                    val pickedDir = DocumentFile.fromTreeUri(activity, treeUri)
-                    activity.grantUriPermission(activity.packageName, treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                val treeUri = data.data
+                if (treeUri != null)
+                    activity?.let { activity ->
+                        val pickedDir = DocumentFile.fromTreeUri(activity, treeUri)
+                        activity.grantUriPermission(activity.packageName, treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                         activity.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        checkIfListIsAvailable(activity, pickedDir)
                     }
-
-                    pickedDir?.listFiles()?.forEach {
-                        Log.v("files", it.name + " type: " + it.type + " isFile: " + it.isFile);
-                    }
-                }
+            }
         }
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun checkIfListIsAvailable(activity: FragmentActivity, pickedDir: DocumentFile?): Boolean {
+        val list = activity.contentResolver.persistedUriPermissions
+        if (pickedDir != null || list.isNotEmpty()) {
+            bAccessStorage?.visibility = View.GONE
+            tabLayout.visibility = View.VISIBLE
+            progressBar?.visibility = View.VISIBLE
+            bChangeAccessStorage?.visibility = View.VISIBLE
+            context?.let {
+
+                MediaStoreHelper.getDocsForNewSystems(it, list, pickedDir,
+                        PickerManager.getFileTypes(),
+                        PickerManager.sortingType.comparator,
+                        object : FileMapResultCallback {
+                            override fun onResultCallback(files: Map<FileType, List<Document>>) {
+                                if (isAdded) {
+                                    progressBar?.visibility = View.GONE
+                                    setDataOnFragments(files)
+                                }
+                            }
+                        }
+                )
+            }
+            return true
+        } else {
+            return false
+        }
     }
 
 

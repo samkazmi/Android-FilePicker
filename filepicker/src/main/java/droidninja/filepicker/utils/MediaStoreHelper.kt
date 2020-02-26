@@ -1,11 +1,15 @@
 package droidninja.filepicker.utils
 
 import android.content.ContentResolver
+import android.content.Context
+import android.content.UriPermission
 import android.os.Bundle
+import androidx.documentfile.provider.DocumentFile
 
 import java.util.Comparator
 
 import droidninja.filepicker.cursors.DocScannerTask
+import droidninja.filepicker.cursors.DocScannerTaskNew
 import droidninja.filepicker.cursors.PhotoScannerTask
 import droidninja.filepicker.cursors.loadercallbacks.FileMapResultCallback
 import droidninja.filepicker.cursors.loadercallbacks.FileResultCallback
@@ -24,5 +28,13 @@ object MediaStoreHelper {
                 comparator: Comparator<Document>?,
                 fileResultCallback: FileMapResultCallback) {
         DocScannerTask(contentResolver, fileTypes, comparator, fileResultCallback).execute()
+    }
+
+
+    fun getDocsForNewSystems(context: Context, uriTree: List<UriPermission>, pickedDir: DocumentFile?,
+                             fileTypes: List<FileType>,
+                             comparator: Comparator<Document>?,
+                             fileResultCallback: FileMapResultCallback) {
+        DocScannerTaskNew(context, uriTree,pickedDir, fileTypes, comparator, fileResultCallback).execute()
     }
 }

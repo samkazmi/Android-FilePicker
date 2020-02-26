@@ -17,8 +17,18 @@
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="12dp"
+        android:layout_above="@id/bChangeAccessStorage"
         android:layout_below="@+id/tabs"/>
 
+    <Button
+        android:id="@+id/bChangeAccessStorage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="12dp"
+        android:text="@string/change_directory_access"/>
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -30,6 +40,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:visibility="gone"
         android:text="@string/allow_storage_access"/>
 </RelativeLayout>
