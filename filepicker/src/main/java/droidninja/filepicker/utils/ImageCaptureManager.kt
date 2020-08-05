@@ -1,5 +1,6 @@
 package droidninja.filepicker.utils
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -7,19 +8,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.Settings
-import androidx.core.content.FileProvider
 import android.text.TextUtils
 import android.util.Log
-
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
+import androidx.core.content.FileProvider
 import droidninja.filepicker.PickerManager
+import java.io.File
+import java.io.IOException
+
 
 class ImageCaptureManager(private val mContext: Context) {
 
@@ -77,18 +72,21 @@ class ImageCaptureManager(private val mContext: Context) {
 
 
     fun notifyMediaStoreDatabase(): Uri? {
-        val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-
-        if (TextUtils.isEmpty(currentPhotoPath)) {
-            return null
+        return if (currentPhotoPath != null && !TextUtils.isEmpty(currentPhotoPath)) {
+            val values = ContentValues()
+            val f = File(currentPhotoPath)
+            values.put(MediaStore.Images.Media.TITLE, f.name)
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg")
+            values.put(MediaStore.Images.Media.DESCRIPTION, "");
+            values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+            }
+            values.put(MediaStore.Images.Media.DATA, currentPhotoPath)
+            mContext.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        } else {
+            null
         }
-
-        val f = File(currentPhotoPath)
-        val contentUri = Uri.fromFile(f)
-        mediaScanIntent.data = contentUri
-        mContext.sendBroadcast(mediaScanIntent)
-
-        return contentUri
     }
 
 

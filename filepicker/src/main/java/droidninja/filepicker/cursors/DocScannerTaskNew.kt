@@ -72,7 +72,9 @@ class DocScannerTaskNew(val context: Context, val uriTree: List<UriPermission>, 
                 d.fileType = getFileType(PickerManager.getFileTypes(), d.mimeType)
                 if (documents.contains(d).not())
                     documents.add(d)
-            }
+            } /*else if (it.isDirectory){
+                documentFileToDocument(DocumentFile.fromTreeUri(context,it.uri),documents)
+            }*/
         }
     }
 

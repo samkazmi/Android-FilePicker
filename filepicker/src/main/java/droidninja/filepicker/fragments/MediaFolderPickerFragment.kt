@@ -5,15 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import droidninja.filepicker.FilePickerConst
@@ -28,7 +28,6 @@ import droidninja.filepicker.utils.GridSpacingItemDecoration
 import droidninja.filepicker.utils.ImageCaptureManager
 import droidninja.filepicker.utils.MediaStoreHelper
 import java.io.IOException
-import java.util.ArrayList
 
 class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAdapterListener {
     lateinit var recyclerView: RecyclerView
@@ -128,7 +127,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
             MediaStoreHelper.getDirs(it.contentResolver, mediaStoreArgs,
                     object : FileResultCallback<PhotoDirectory> {
                         override fun onResultCallback(files: List<PhotoDirectory>) {
-                            if(isAdded) {
+                            if (isAdded) {
                                 updateList(files.toMutableList())
                                 Log.v("directory", files.toString())
                             }
@@ -145,20 +144,29 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                 emptyView.visibility = View.GONE
                 recyclerView.visibility = View.VISIBLE
             } else {
-                emptyView.visibility = View.VISIBLE
-                recyclerView.visibility = View.GONE
+                if (fileType == FilePickerConst.MEDIA_TYPE_IMAGE && PickerManager.isEnableCamera) {
+                    emptyView.visibility = View.GONE
+                    recyclerView.visibility = View.VISIBLE
+                } else {
+                    emptyView.visibility = View.VISIBLE
+                    recyclerView.visibility = View.GONE
+                }
                 return
             }
 
             val photoDirectory = PhotoDirectory()
             photoDirectory.bucketId = FilePickerConst.ALL_PHOTOS_BUCKET_ID
 
-            if (fileType == FilePickerConst.MEDIA_TYPE_VIDEO) {
-                photoDirectory.name = getString(R.string.all_videos)
-            } else if (fileType == FilePickerConst.MEDIA_TYPE_IMAGE) {
-                photoDirectory.name = getString(R.string.all_photos)
-            } else {
-                photoDirectory.name = getString(R.string.all_files)
+            when (fileType) {
+                FilePickerConst.MEDIA_TYPE_VIDEO -> {
+                    photoDirectory.name = getString(R.string.all_videos)
+                }
+                FilePickerConst.MEDIA_TYPE_IMAGE -> {
+                    photoDirectory.name = getString(R.string.all_photos)
+                }
+                else -> {
+                    photoDirectory.name = getString(R.string.all_files)
+                }
             }
 
             if (dirs.size > 0 && dirs[0].medias.size > 0) {
@@ -187,14 +195,16 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
 
     override fun onCameraClicked() {
         try {
-            context?.let {
-                val intent = imageCaptureManager?.dispatchTakePictureIntent()
-                if (intent != null) {
-                    startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
-                } else {
+            //context?.let {
+            val intent = imageCaptureManager?.dispatchTakePictureIntent()
+            if (intent != null) {
+                this.startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
+            } else {
+                context?.let {
                     Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
                 }
             }
+            // }
         } catch (e: IOException) {
             e.printStackTrace()
         }

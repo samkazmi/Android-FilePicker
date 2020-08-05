@@ -98,9 +98,9 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
     private fun initView(view: View) {
         recyclerView = view.findViewById(R.id.recyclerview)
         emptyView = view.findViewById(R.id.empty_view)
-        arguments?.let {
-            fileType = it.getInt(BaseFragment.FILE_TYPE)
-            activity?.let {
+        arguments?.let { bundle ->
+            fileType = bundle.getInt(FILE_TYPE)
+            context?.let {
                 imageCaptureManager = ImageCaptureManager(it)
             }
             val layoutManager = StaggeredGridLayoutManager(3, OrientationHelper.VERTICAL)

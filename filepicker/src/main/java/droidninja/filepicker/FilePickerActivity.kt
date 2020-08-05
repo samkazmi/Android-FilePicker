@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.ActionBar
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
@@ -14,7 +13,8 @@ import droidninja.filepicker.fragments.DocPickerFragment
 import droidninja.filepicker.fragments.MediaPickerFragment
 import droidninja.filepicker.fragments.PhotoPickerFragmentListener
 import droidninja.filepicker.utils.FragmentUtil
-import java.util.ArrayList
+import droidninja.filepicker.utils.ImageCaptureManager
+import java.util.*
 
 class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener, DocFragment.DocFragmentListener, DocPickerFragment.DocPickerFragmentListener, MediaPickerFragment.MediaPickerFragmentListener {
     private var type: Int = 0
@@ -128,6 +128,12 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
             } else {
                 setToolbarTitle(PickerManager.currentCount)
             }
+            ImageCaptureManager.REQUEST_TAKE_PHOTO -> {
+                val f = supportFragmentManager.findFragmentById(R.id.container)
+                if (f is MediaPickerFragment) {
+                    f.onActivityResult(requestCode, resultCode, data)
+                }
+            }
         }
     }
 
@@ -161,12 +167,12 @@ class FilePickerActivity : BaseFilePickerActivity(), PhotoPickerFragmentListener
         setToolbarTitle(currentCount)
 
         //if (PickerManager.getMaxCount() == 1 && currentCount == 1) {
-            returnData(
-                    if (type == FilePickerConst.MEDIA_PICKER)
-                        PickerManager.selectedPhotos
-                    else
-                        PickerManager.selectedFiles)
-      // }
+        returnData(
+                if (type == FilePickerConst.MEDIA_PICKER)
+                    PickerManager.selectedPhotos
+                else
+                    PickerManager.selectedFiles)
+        // }
     }
 
     companion object {

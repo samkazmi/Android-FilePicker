@@ -87,7 +87,12 @@ class DocPickerFragment : BaseFragment() {
         }
         bAccessStorage?.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42)
+                val i = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                //i.addCategory(Intent.CATEGORY_OPENABLE)
+               // i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                //i.type = "application/pdf"
+                i.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/pdf", "application/zip"))
+                startActivityForResult(i, 42)
             }
         }
         bChangeAccessStorage?.setOnClickListener {
