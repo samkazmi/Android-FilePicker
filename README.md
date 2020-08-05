@@ -12,7 +12,7 @@ A filepicker which allows to select images and videos with flexibility. It also 
 
 * As of now, It is only available in jCenter(), So just put this in your app dependencies:
 ```gradle
-    implementation 'com.github.samkazmi:Android-FilePicker:2.3.1'
+    implementation 'com.github.samkazmi:Android-FilePicker:2.4.0'
 ```
 
 # Note
