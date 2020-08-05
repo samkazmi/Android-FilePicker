@@ -172,8 +172,8 @@ class DocPickerFragment : BaseFragment() {
                 if (treeUri != null)
                     activity?.let { activity ->
                         val pickedDir = DocumentFile.fromTreeUri(activity, treeUri)
-                        activity.grantUriPermission(activity.packageName, treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                        activity.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION and Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        activity.application.grantUriPermission(activity.packageName, treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        activity.application.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         checkIfListIsAvailable(activity, pickedDir)
                     }
             }
@@ -183,7 +183,7 @@ class DocPickerFragment : BaseFragment() {
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun checkIfListIsAvailable(activity: FragmentActivity, pickedDir: DocumentFile?): Boolean {
-        val list = activity.contentResolver.persistedUriPermissions
+        val list = activity.application.contentResolver.persistedUriPermissions
         if (pickedDir != null || list.isNotEmpty()) {
             bAccessStorage?.visibility = View.GONE
             tabLayout.visibility = View.VISIBLE
