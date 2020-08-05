@@ -37,6 +37,7 @@ import droidninja.filepicker.models.PhotoDirectory
 import droidninja.filepicker.utils.AndroidLifecycleUtils
 import droidninja.filepicker.utils.ImageCaptureManager
 import droidninja.filepicker.utils.MediaStoreHelper
+import droidninja.filepicker.utils.VideoCaptureManager
 
 
 class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
@@ -47,6 +48,7 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
     private var mListener: PhotoPickerFragmentListener? = null
     private var photoGridAdapter: PhotoGridAdapter? = null
     private var imageCaptureManager: ImageCaptureManager? = null
+    private var videoCaptureManager: VideoCaptureManager? = null
     private lateinit var mGlideRequestManager: RequestManager
     private var fileType: Int = 0
     private var selectAllItem: MenuItem? = null
@@ -56,6 +58,16 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_photo_picker, container, false)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        imageCaptureManager?.onSaveInstanceState(outState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        imageCaptureManager?.onRestoreInstanceState(savedInstanceState)
     }
 
     override fun onAttach(context: Context) {
@@ -88,6 +100,10 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(PickerManager.hasSelectAll())
         mGlideRequestManager = Glide.with(this)
+        activity?.let {
+            imageCaptureManager = ImageCaptureManager(it)
+            videoCaptureManager = VideoCaptureManager(it)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -100,9 +116,6 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
         emptyView = view.findViewById(R.id.empty_view)
         arguments?.let { bundle ->
             fileType = bundle.getInt(FILE_TYPE)
-            context?.let {
-                imageCaptureManager = ImageCaptureManager(it)
-            }
             val layoutManager = StaggeredGridLayoutManager(3, OrientationHelper.VERTICAL)
             layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
             recyclerView.layoutManager = layoutManager
@@ -174,11 +187,28 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
                     recyclerView.adapter = photoGridAdapter
                     photoGridAdapter?.setCameraListener(View.OnClickListener {
                         try {
-                            val intent = imageCaptureManager?.dispatchTakePictureIntent()
-                            if (intent != null)
-                                startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
-                            else
-                                Toast.makeText(activity, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+                            when (fileType) {
+                                FilePickerConst.MEDIA_TYPE_VIDEO -> {
+                                    val intent = videoCaptureManager?.dispatchTakeVideoIntent()
+                                    if (intent != null) {
+                                        this.startActivityForResult(intent, VideoCaptureManager.REQUEST_TAKE_VIDEO)
+                                    } else {
+                                        context?.let {
+                                            Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                                FilePickerConst.MEDIA_TYPE_IMAGE -> {
+                                    val intent = imageCaptureManager?.dispatchTakePictureIntent()
+                                    if (intent != null) {
+                                        this.startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
+                                    } else {
+                                        context?.let {
+                                            Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
                         } catch (e: IOException) {
                             e.printStackTrace()
                         }
@@ -195,6 +225,15 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
                 val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
                 if (imagePath != null) {
                     PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
+                    mListener?.onItemSelectedFromCamera()
+                } else {
+                    Handler().postDelayed({ getDataFromMedia() }, 1000)
+                }
+            }
+            VideoCaptureManager.REQUEST_TAKE_VIDEO -> if (resultCode == Activity.RESULT_OK) {
+                val videoPath = videoCaptureManager?.notifyMediaStoreDatabase(data)
+                if (videoPath != null) {
+                    PickerManager.add(videoPath, FilePickerConst.FILE_TYPE_MEDIA)
                     mListener?.onItemSelectedFromCamera()
                 } else {
                     Handler().postDelayed({ getDataFromMedia() }, 1000)
@@ -219,7 +258,7 @@ class MediaDetailPickerFragment : BaseFragment(), FileAdapterListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val itemId = item?.itemId
+        val itemId = item.itemId
         if (itemId == R.id.action_select) {
             photoGridAdapter?.let { adapter ->
                 adapter.selectAll()

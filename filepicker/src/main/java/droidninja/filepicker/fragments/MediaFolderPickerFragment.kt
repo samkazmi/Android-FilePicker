@@ -23,10 +23,7 @@ import droidninja.filepicker.R
 import droidninja.filepicker.adapters.FolderGridAdapter
 import droidninja.filepicker.cursors.loadercallbacks.FileResultCallback
 import droidninja.filepicker.models.PhotoDirectory
-import droidninja.filepicker.utils.AndroidLifecycleUtils
-import droidninja.filepicker.utils.GridSpacingItemDecoration
-import droidninja.filepicker.utils.ImageCaptureManager
-import droidninja.filepicker.utils.MediaStoreHelper
+import droidninja.filepicker.utils.*
 import java.io.IOException
 
 class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAdapterListener {
@@ -37,6 +34,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     private var mListener: PhotoPickerFragmentListener? = null
     private var photoGridAdapter: FolderGridAdapter? = null
     private var imageCaptureManager: ImageCaptureManager? = null
+    private var videoCaptureManager: VideoCaptureManager? = null
     private lateinit var mGlideRequestManager: RequestManager
     private var fileType: Int = 0
     private var openCamera: Boolean = false
@@ -46,6 +44,16 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_media_folder_picker, container, false)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        imageCaptureManager?.onSaveInstanceState(outState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        imageCaptureManager?.onRestoreInstanceState(savedInstanceState)
     }
 
     override fun onAttach(context: Context) {
@@ -66,6 +74,10 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mGlideRequestManager = Glide.with(this)
+        activity?.let {
+            imageCaptureManager = ImageCaptureManager(it)
+            videoCaptureManager = VideoCaptureManager(it)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -84,9 +96,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
         arguments?.let {
             fileType = it.getInt(BaseFragment.FILE_TYPE)
             openCamera = it.getBoolean(OPEN_CAMERA, false)
-            activity?.let {
-                imageCaptureManager = ImageCaptureManager(it)
-            }
+
             val layoutManager = GridLayoutManager(activity, 2)
 
             val spanCount = 2 // 2 columns
@@ -144,7 +154,7 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                 emptyView.visibility = View.GONE
                 recyclerView.visibility = View.VISIBLE
             } else {
-                if (fileType == FilePickerConst.MEDIA_TYPE_IMAGE && PickerManager.isEnableCamera) {
+                if (PickerManager.isEnableCamera) {
                     emptyView.visibility = View.GONE
                     recyclerView.visibility = View.VISIBLE
                 } else {
@@ -183,7 +193,11 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
 
             if (photoGridAdapter == null) {
                 context?.let {
-                    photoGridAdapter = FolderGridAdapter(it, mGlideRequestManager, dirs, mutableListOf(), fileType == FilePickerConst.MEDIA_TYPE_IMAGE && PickerManager.isEnableCamera)
+                    photoGridAdapter = FolderGridAdapter(it, mGlideRequestManager,
+                            dirs, mutableListOf(),
+                            (fileType == FilePickerConst.MEDIA_TYPE_VIDEO
+                                    || fileType == FilePickerConst.MEDIA_TYPE_IMAGE)
+                                    && PickerManager.isEnableCamera)
                     recyclerView.adapter = photoGridAdapter
                     photoGridAdapter?.setFolderGridAdapterListener(this)
                 }
@@ -196,20 +210,31 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
 
     override fun onCameraClicked() {
         try {
-            //context?.let {
-            val intent = imageCaptureManager?.dispatchTakePictureIntent()
-            if (intent != null) {
-                this.startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
-            } else {
-                context?.let {
-                    Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+            when (fileType) {
+                FilePickerConst.MEDIA_TYPE_VIDEO -> {
+                    val intent = videoCaptureManager?.dispatchTakeVideoIntent()
+                    if (intent != null) {
+                        this.startActivityForResult(intent, VideoCaptureManager.REQUEST_TAKE_VIDEO)
+                    } else {
+                        context?.let {
+                            Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                FilePickerConst.MEDIA_TYPE_IMAGE -> {
+                    val intent = imageCaptureManager?.dispatchTakePictureIntent()
+                    if (intent != null) {
+                        this.startActivityForResult(intent, ImageCaptureManager.REQUEST_TAKE_PHOTO)
+                    } else {
+                        context?.let {
+                            Toast.makeText(it, R.string.no_camera_exists, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
-            // }
         } catch (e: IOException) {
             e.printStackTrace()
         }
-
     }
 
     override fun onFolderClicked(photoDirectory: PhotoDirectory) {
@@ -226,6 +251,15 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                 val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
                 if (imagePath != null) {
                     PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
+                    mListener?.onItemSelectedFromCamera()
+                } else {
+                    Handler().postDelayed({ getDataFromMedia() }, 1000)
+                }
+            }
+            VideoCaptureManager.REQUEST_TAKE_VIDEO -> if (resultCode == Activity.RESULT_OK) {
+                val videoPath = videoCaptureManager?.notifyMediaStoreDatabase(data)
+                if (videoPath != null) {
+                    PickerManager.add(videoPath, FilePickerConst.FILE_TYPE_MEDIA)
                     mListener?.onItemSelectedFromCamera()
                 } else {
                     Handler().postDelayed({ getDataFromMedia() }, 1000)

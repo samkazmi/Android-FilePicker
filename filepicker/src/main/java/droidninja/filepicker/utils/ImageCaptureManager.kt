@@ -26,7 +26,6 @@ import java.util.*
 class ImageCaptureManager(private val mContext: Context) {
 
     var currentPhotoPath: String? = null
-        private set
 
     @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
