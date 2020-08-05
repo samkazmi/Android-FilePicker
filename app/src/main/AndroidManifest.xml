@@ -19,17 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".FragmentActivity"></activity>
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="vi.filepicker"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
-        </provider>
+        <activity android:name=".FragmentActivity"/>
     </application>
 
 </manifest>
