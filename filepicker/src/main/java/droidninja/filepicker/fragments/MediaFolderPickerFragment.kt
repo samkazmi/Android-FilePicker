@@ -150,35 +150,36 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                 } else {
                     emptyView.visibility = View.VISIBLE
                     recyclerView.visibility = View.GONE
-                }
-                return
-            }
-
-            val photoDirectory = PhotoDirectory()
-            photoDirectory.bucketId = FilePickerConst.ALL_PHOTOS_BUCKET_ID
-
-            when (fileType) {
-                FilePickerConst.MEDIA_TYPE_VIDEO -> {
-                    photoDirectory.name = getString(R.string.all_videos)
-                }
-                FilePickerConst.MEDIA_TYPE_IMAGE -> {
-                    photoDirectory.name = getString(R.string.all_photos)
-                }
-                else -> {
-                    photoDirectory.name = getString(R.string.all_files)
+                    return
                 }
             }
+            if (dirs.isNotEmpty()) {
+                val photoDirectory = PhotoDirectory()
+                photoDirectory.bucketId = FilePickerConst.ALL_PHOTOS_BUCKET_ID
 
-            if (dirs.size > 0 && dirs[0].medias.size > 0) {
-                photoDirectory.dateAdded = dirs[0].dateAdded
-                photoDirectory.coverPath = dirs[0].medias[0].path
+                when (fileType) {
+                    FilePickerConst.MEDIA_TYPE_VIDEO -> {
+                        photoDirectory.name = getString(R.string.all_videos)
+                    }
+                    FilePickerConst.MEDIA_TYPE_IMAGE -> {
+                        photoDirectory.name = getString(R.string.all_photos)
+                    }
+                    else -> {
+                        photoDirectory.name = getString(R.string.all_files)
+                    }
+                }
+
+                if (dirs.size > 0 && dirs[0].medias.size > 0) {
+                    photoDirectory.dateAdded = dirs[0].dateAdded
+                    photoDirectory.coverPath = dirs[0].medias[0].path
+                }
+
+                for (i in dirs.indices) {
+                    photoDirectory.addPhotos(dirs[i].medias)
+                }
+
+                dirs.add(0, photoDirectory)
             }
-
-            for (i in dirs.indices) {
-                photoDirectory.addPhotos(dirs[i].medias)
-            }
-
-            dirs.add(0, photoDirectory)
 
             if (photoGridAdapter == null) {
                 context?.let {
