@@ -253,7 +253,11 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
                     PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
                     mListener?.onItemSelectedFromCamera()
                 } else {
-                    Handler().postDelayed({ getDataFromMedia() }, 1000)
+                    if (openCamera) {
+                        activity?.finish()
+                    } else {
+                        Handler().postDelayed({ getDataFromMedia() }, 1000)
+                    }
                 }
             }
             VideoCaptureManager.REQUEST_TAKE_VIDEO -> if (resultCode == Activity.RESULT_OK) {
