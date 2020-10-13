@@ -79,13 +79,14 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
             videoCaptureManager = VideoCaptureManager(it)
         }
     }
-
+private var closeActivity = false
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView(view)
         if (openCamera) {
             onCameraClicked()
             openCamera = false
+            closeActivity = true
             arguments?.remove(OPEN_CAMERA)
         }
     }
@@ -247,26 +248,31 @@ class MediaFolderPickerFragment : BaseFragment(), FolderGridAdapter.FolderGridAd
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            ImageCaptureManager.REQUEST_TAKE_PHOTO -> if (resultCode == Activity.RESULT_OK) {
-                val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
-                if (imagePath != null) {
-                    PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
-                    mListener?.onItemSelectedFromCamera()
-                } else {
-                    if (openCamera) {
-                        activity?.finish()
+            ImageCaptureManager.REQUEST_TAKE_PHOTO -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val imagePath = imageCaptureManager?.notifyMediaStoreDatabase()
+                    if (imagePath != null) {
+                        PickerManager.add(imagePath, FilePickerConst.FILE_TYPE_MEDIA)
+                        mListener?.onItemSelectedFromCamera()
                     } else {
                         Handler().postDelayed({ getDataFromMedia() }, 1000)
                     }
+                } else {
+                    if (closeActivity) {
+                        closeActivity = false
+                        activity?.finish()
+                    }
                 }
             }
-            VideoCaptureManager.REQUEST_TAKE_VIDEO -> if (resultCode == Activity.RESULT_OK) {
-                val videoPath = videoCaptureManager?.notifyMediaStoreDatabase(data)
-                if (videoPath != null) {
-                    PickerManager.add(videoPath, FilePickerConst.FILE_TYPE_MEDIA)
-                    mListener?.onItemSelectedFromCamera()
-                } else {
-                    Handler().postDelayed({ getDataFromMedia() }, 1000)
+            VideoCaptureManager.REQUEST_TAKE_VIDEO -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val videoPath = videoCaptureManager?.notifyMediaStoreDatabase(data)
+                    if (videoPath != null) {
+                        PickerManager.add(videoPath, FilePickerConst.FILE_TYPE_MEDIA)
+                        mListener?.onItemSelectedFromCamera()
+                    } else {
+                        Handler().postDelayed({ getDataFromMedia() }, 1000)
+                    }
                 }
             }
         }
